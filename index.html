@@ -1,0 +1,122 @@
+<!DOCTYPE html> 
+<html>
+<head>
+	<title>GoodWeather</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="apple-touch-icon" href="images/icon.png">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.css" />
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.4/jquery.mobile-1.4.4.min.js"></script>
+	<link rel="stylesheet" href="css/FONT/font-face/stylesheet.css">
+	<script type="text/javascript">
+		var icons = {
+			"clear-day": "B",
+			"clear-night": "C",
+			"rain": "R",
+			"snow": "G",
+			"sleet": "X",
+			"wind": "S",
+			"fog": "N",
+			"cloudy": "Y",
+			"partly-cloudy-day": "H",
+			"partly-cloudy-night": "I"
+			};
+		// Fututre add moon Phases
+
+		//Cities
+		var cities = {	
+						"new york" 		: 	{coords: {latitude: 40.672060, longitude:-73.983898}},
+						"los angeles" 	: 	{coords: {latitude: 34.101422, longitude: -118.341224}},
+						"chicago" 		: 	{coords: {latitude: 41.879003, longitude: -87.63675}},
+						"san francisco" : 	{coords: {latitude: 37.788531, longitude: -122.407237}},
+						"miami" 		:	{coords: {latitude: 25.790176, longitude: -80.140133}},
+						"current location" : ""
+					 };
+
+		function loadWeather(cityCoords){
+
+			var latlong = cityCoords.coords.latitude+","+cityCoords.coords.longitude;
+
+			var forecastURL ="https://api.forecast.io/forecast/210a7769f3f9f0a4408232a542784dcc/"+latlong;
+			$.ajax({
+				url: forecastURL,
+				jsonpCallback: 'jsonpCallback',
+				contentType: 'application/json',
+				dataType: 'jsonp',
+				success: function(json){
+					console.log(json.currently);
+					$("#current_temp").attr("data-icon", icons[json.currently.icon]);
+					$("#current_temp").html(Math.round(json.currently.temperature)+"&#176; F");
+					$("#current_summary").html(json.currently.summary);
+
+					},
+				error: function(e){
+					console.log(e.message);
+					}
+
+			});
+		}
+		function loadDefaultCity(){
+			loadCity("New York");
+		}
+
+		function loadCity(city){
+			$("#current_location").html(city);
+			if(city.toLowerCase() == 'current location'){
+				if(navigator.geolocation){
+					navigator.geolocation.getCurrentPosition(loadWeather, loadDefaultCity);
+				}else {
+					loadDefaultCity();
+				}
+			}else{
+				loadWeather(cities[city.toLowerCase()]);
+			}
+		}
+
+		$("document").ready(function(){
+			
+			loadCity("Chicago");
+
+			$("a.city").bind("click", function(){
+				console.log($(this).html());
+				loadCity($(this).html());
+			});
+
+		});
+
+	</script>>
+</head>
+
+<body>
+<div data-role="page">
+	<div data-role="panel" id="left-panel" data-display="overlay"  data-theme="c">
+	    <ul data-role="listview" data-theme="d">
+	    	<li data-icon="delete"><a href="#" data-rel="close">Close</a></li>
+	    	<li data-role="list-divider">Select a City</li>
+	    	<li><a href="#" class="city" data-rel="close">Current Location</a></li>
+	    	<li><a href="#" class="city" data-rel="close">Chicago</a></li>
+	    	<li><a href="#" class="city" data-rel="close">Los Angeles</a></li>
+	    	<li><a href="#" class="city" data-rel="close">New York</a></li>
+	    </ul>
+	</div><!-- /panel -->
+
+	<div data-role="header" data-position="fixed" data-theme="c">
+		<h1>GoodWeather</h1>
+		<a href="#left-panel" data-icon="bars" data-iconpos="notext" data-iconshadow="false">Menu</a>
+	</div><!-- /header -->
+
+	<div role="main" class="ui-content">
+		<p id="current_temp" class="icon" data-icon="I">65&#176; F</p>
+		<p id="current_summary">Partly Coloudy</p>
+		<p id="current_location">Current Location</p>
+	</div><!-- /content -->
+
+	<!-- 	
+	<div data-role="footer">
+		<h4>Page Footer</h4>
+	</div>
+	footer --> 
+</div><!-- /page -->
+</body>
+</html>
